@@ -21,19 +21,6 @@ patches_urls = """
 config.magento_tarball = config.download_url.split('/')[-1]
 
 
-prepare_debian = """\
-#!/bin/sh
-aptitude install -y python python-dev wget tar gzip
-wget http://peak.telecommunity.com/dist/ez_setup.py
-python ez_setup.py
-rm ez_setup.py
-easy_install mercurial
-"""
-
-
-prepare_redhat = '' # TODO
-
-
 def check():
     """Checks whether we can deploy
     """
@@ -51,12 +38,29 @@ def check():
 
 
 def prepare_debian():
-    sudo(prepare_debian)
+    """Prepare a Debian target system for installation
+    """
+    # check for internet access
+    run('ping -c 1 -W 3 peak.telecommunity.com')
+    # install required packages
+    sudo("""\
+    packages="python python-dev wget tar gzip php5 php5-curl"
+    dpkg -l $packages || aptitude install $packages
+    which easy_install \
+        || (wget http://peak.telecommunity.com/dist/ez_setup.py \
+            && python ez_setup.py \
+            && rm ez_setup.py)
+    which hg || easy_install mercurial
+    hg help qinit > /dev/null \
+        || echo 'Please enable the MQ extension on the target machine!
+        Just add these two lines in your ~/.hgrc:\n[extensions]\nhgext.mq='
+    """)
 
 
 def prepare_redhat():
-    sudo(prepare_redhat)
-
+    """Prepare a Redhat target system for installation
+    """
+    # TODO
 
 def wwwdir(path=None):
     """Set the installation path of magento from the fab command line
@@ -95,9 +99,9 @@ def _hgtransaction(func):
         run('which hg')
         run('hg help qinit > /dev/null')
         # initialize a repo if none
-        run('cd $(wwwdir)/magento && [ -e .hg ] || hg init')
+        run('cd $(wwwdir) && [ -e .hg ] || hg init')
         # check there is no uncommited changes
-        run('cd $(wwwdir)/magento && hg diff | wc -c')
+        run('cd $(wwwdir) && hg diff | wc -c')
         # store the possibly applied mq patches
         applied_patches = run('cd $(wwwdir)/magento && hg qapplied')
         print applied_patches
@@ -143,21 +147,25 @@ def deploy(version):
     wget $(download_url)
     tar xzf $(magento_tarball) --strip 1
     rm $(magento_tarball)
+    chmod g+w app/etc var media media/downloadable media/import
     cd ..
     hg init
     hg add
-    hg ci -m 'initial magento remote installation'
+    hg ci -m 'initial magento remote installation version $(magento_version)'
     """)
+    sudo('chgrp -R $(wwwuser) $(wwwdir)')
 
 
 
 def customize():
-    """customize a magento installation
+    """Customize a magento installation by applying mq patches
     """
+
+
 
 @_hgtransaction
 def upgrade(to_version):
-    """upgrade a magento installation to a higher version
+    """upgrade a magento installation to a higher version.
     """
     from_version = get_version()
     local('echo Wanted version = %s...' % to_version)
@@ -177,7 +185,7 @@ def upgrade(to_version):
         run('cd $(wwwdir)/magento && wget -c %s' % available_diffs[version])
         patch_name = available_diffs[version].split('/')[-1]
         if patch_name.endswith('.tar.gz'):
-            run('tar xzf %s' % patch_name)
+            run('cd $(wwwdir)/magento && tar xzf %s' % patch_name)
             patch_name = patch_name[:-7]
         try:
             run('cd $(wwwdir)/magento && patch -p0 < %s' % patch_name)
