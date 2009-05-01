@@ -21,6 +21,11 @@ patches_urls = """
 config.magento_tarball = config.download_url.split('/')[-1]
 
 
+def host(host):
+    """Allows to specify a single target host from the command line
+    """
+    config.fab_hosts = [host,]
+
 def check():
     """Checks whether we can deploy
     """
@@ -89,12 +94,12 @@ def get_version():
     return version
 
 
-def _hgtransaction(func):
+def _hgtransaction(decorated_function):
     """Decorator that simulates a transaction using Mercurial.
     It first checks whether everything is commited,
     then do the main job, then commits or reverts everything.
     """
-    def modified(*args):
+    def new_function(*args):
         # checks for hg and mq
         run('which hg')
         run('hg help qinit > /dev/null')
@@ -109,11 +114,11 @@ def _hgtransaction(func):
         run('cd $(wwwdir)/magento && hg qpop -a')
         try:
             # try to do our main job
-            func(*args)
+            decorated_function(*args)
             # commit the changes
             local('echo Committing changes...')
             run('cd $(wwwdir)/magento && hg ci -m "%s"'
-                 % (func.func_name + unicode(args)))
+                 % (decorated_function.func_name + unicode(args)))
         except BaseException:
             # rollback
             local('echo Got an error. Reverting all changes...')
@@ -127,7 +132,7 @@ def _hgtransaction(func):
                 local('echo WARNING: Some previously applied patches failed.'
                       'Please fix them manually')
 
-    return modified
+    return new_function
 
 
 def deploy(version):
@@ -188,7 +193,9 @@ def upgrade(to_version):
             run('cd $(wwwdir)/magento && tar xzf %s' % patch_name)
             patch_name = patch_name[:-7]
         try:
-            run('cd $(wwwdir)/magento && patch -p0 < %s' % patch_name)
+            run('cd $(wwwdir)/magento && patch -s -p0 < %s' % patch_name, fail='warn')
+            # really stop if there are reject files
+            run("find . -name '*.rej' | wc -l")
         finally:
             run('rm $(wwwdir)/magento/%s' % patch_name)
 
