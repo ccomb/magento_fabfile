@@ -69,6 +69,9 @@ def prepare_debian():
     dpkg -l $packages || aptitude install $packages
     """)
 
+    # Reload Apache (if not enough, you must manually restart)
+    sudo("/etc/init.d/apache2 reload")
+
     # install latest Setuptools for Python
     sudo("""
     which easy_install \
@@ -80,8 +83,8 @@ def prepare_debian():
     # install latest Mercurial
     sudo("which hg || easy_install mercurial")
 
-    # enable the MQ Extension
-    sudo("""python -c "
+    # enable the MQ and Graphlog Extensions
+    run("""python -c "
 import ConfigParser
 import os
 c = ConfigParser.ConfigParser()
@@ -89,6 +92,7 @@ hgrc = os.path.join(os.path.expanduser('~'), '.hgrc')
 c.read(hgrc)
 c.has_section('extensions') or c.add_section('extensions')
 c.has_option('extensions', 'hgext.mq') or c.set('extensions', 'hgext.mq', '')
+c.has_option('extensions', 'hgext.graphlog') or c.set('extensions', 'hgext.graphlog', '')
 c.write(open(hgrc, 'w'))
     "
     """)
@@ -127,6 +131,11 @@ def get_version():
     return version
 
 
+def get_glog():
+    """Read the mercurial graphlog
+    """
+    run('cd $(wwwdir) && hg glog')
+
 def _hgtransaction(decorated_function):
     """Decorator that simulates a transaction using Mercurial.
     It first checks whether everything is commited,
@@ -139,7 +148,7 @@ def _hgtransaction(decorated_function):
         # initialize a repo if none
         run('cd $(wwwdir) && [ -e .hg ] || hg init')
         # check there is no uncommited changes
-        run('cd $(wwwdir) && hg diff | wc -c')
+        run('cd $(wwwdir) && [ $(hg st | wc -l) -eq 0 ]')
         # store the possibly applied mq patches
         applied_patches = run('cd $(wwwdir)/magento && hg qapplied')
         print applied_patches
@@ -150,6 +159,7 @@ def _hgtransaction(decorated_function):
             decorated_function(*args)
             # commit the changes
             local('echo Committing changes...')
+            run('cd $(wwwdir)/magento && hg addremove')
             run('cd $(wwwdir)/magento && hg ci -m "%s"'
                  % (decorated_function.func_name + unicode(args)))
         except BaseException:
@@ -173,24 +183,31 @@ def deploy(version):
     """
     local('echo Deploying version %s' % version)
     check()
+    # move previous installation
     sudo('mv $(wwwdir) $(wwwdir).$(fab_timestamp)', fail='warn')
+
+    # create target directory
     sudo("""
     mkdir -p $(wwwdir)/magento
     chown -R $(wwwuser): $(wwwdir)
     chmod -R g+w $(wwwdir)
     """)
     config.magento_version = version
+    # download, extract, put under version control
     run("""\
     cd $(wwwdir)/magento
     wget $(download_url)
     tar xzf $(magento_tarball) --strip 1
     rm $(magento_tarball)
-    chmod g+w app/etc var media media/downloadable media/import
+    chmod -R g+w .
     cd ..
+    echo 'magento/var/cache\nmagento/var/session/' > .hgignore
     hg init
     hg add
     hg ci -m 'initial magento remote installation version $(magento_version)'
     """)
+
+    # change permissions
     sudo('chgrp -R $(wwwuser) $(wwwdir)')
 
 
@@ -231,6 +248,7 @@ def upgrade(to_version):
             run("find . -name '*.rej' | wc -l")
         finally:
             run('rm $(wwwdir)/magento/%s' % patch_name)
+
 
 
 

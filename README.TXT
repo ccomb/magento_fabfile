@@ -1,6 +1,6 @@
-=================================================
-Easy Magento deployment with Fabric and Mercurial
-=================================================
+=========================================================
+Professional Magento deployment with Fabric and Mercurial
+=========================================================
 
 .. highlights::
 
@@ -13,7 +13,6 @@ Quickstart
 ==========
 If you are in a hurry, if you already know Magento, Mercurial, MQ Extension and Fabric and
 you don't like to read documentation, here is a quickstart for Debian or Ubuntu.
-Otherwise, skip to the next chapter.
 
 Install the required tools on your machine::
 
@@ -37,13 +36,14 @@ Check installed version:
 
   $ fab set_host:user@host get_version
 
-The core idea is to deploy Magento on the server into a *Mercurial* repository,
-so that everything is versioned, and we use *Fabric* to automate the deployment,
-the upgrade, and the patches management.  The main Mercurial history is used for
-upgrades, and MQ patches are used for extensions and customization.  During an
-upgrade, all patches are unapplied, diffs are applied, then patches are
-reapplied. Mercurial is used to simulate a transactional system, so if an
-upgrade fails, everything is safely reverted to the previous state.
+Professional means safe and quick. The core idea is to deploy Magento on the
+server into a *Mercurial* repository, so that everything is versioned, and
+to use *Fabric* to automate the deployment, the upgrade, and the patches
+management.  The main Mercurial history is used for upgrades, and MQ patches are
+used for extensions and customization.  During an upgrade, all patches are
+unapplied, diffs are applied, then patches are reapplied. Mercurial is used to
+simulate a transactional system, so if an upgrade fails, everything is safely
+reverted to the previous state.
 
 Everything is done using a single fabfile. The fabfile defines useful commands
 for deployment or upgrades. The actual Mercurial commands are defined in the
@@ -72,7 +72,7 @@ easily, with two different methods:
 
  * download a small downloader package, extract it on your hard disk, upload all
    the files onto your server by FTP, then access the downloader through your
-   browser and let it finish downloading and installing the rest of Magento.
+   browser and let it finish downloading and installing the remaining files.
 
 That's the common way of installing Magento on a shared hosting. If you own a
 dedicated or private server, the method is exactly the same, except that you do
@@ -214,9 +214,9 @@ and look at the first few variables defined at the top of the file:
  * ``config.wwwuser`` is the system user that will own all the files in the
    Magento installation. The typical value for a Debian system is 'www-data'.
 
-
 Check the server environment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Make sure your server can be accessed through SSH.
 To check if the server is ready for a Magento deployment, run:
 
   $ fab check
@@ -239,7 +239,7 @@ fabfile.
 
 Deploy Magento
 ~~~~~~~~~~~~~~
-Now that your server is ready for deployment, just deploy Magento 1.2.1 with:
+Now that your server is ready for deployment, you can deploy Magento 1.2.1 with:
 
   $ fab set_host:user@host deploy:1.2.1
 
@@ -247,16 +247,29 @@ Now that your server is ready for deployment, just deploy Magento 1.2.1 with:
 config variable at the beginning of the fabfile. Use it to set the user and host
 for deployment. Note that the user should be sudoer on the server.
 
+If you deploy twice, the previous site is not overwritten, but renamed with a
+timestamp.
+
+
 Check Magento version
 ~~~~~~~~~~~~~~~~~~~~~
 To retrieve the version number of the deployed Magento instance, run:
 
   $ fab set_host:user@host get_version
 
-customization
-~~~~~~~~~~~~~
 
-upgrade
-~~~~~~~
+Customize Magento
+~~~~~~~~~~~~~~~~~
+
+
+Upgrade Magento
+~~~~~~~~~~~~~~~
+
+
+Retrieve the deployment history
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Run:
+
+  $ fab set_host:user@host glog
 
 
