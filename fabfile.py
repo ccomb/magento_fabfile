@@ -1,5 +1,18 @@
+# coding: utf-8
+# Fabfile for Magento deployment
+#
+# © 2009  Christophe Combelles <ccomb@gorfou.fr>
+# This source file is subject to the Open Software License (OSL 3.0)
+# that is bundled with this package in the file LICENSE.txt.
+
+# If you want to run commands without setting the user and host from the command
+# line, enable the fab_user and fab_hosts variables below. The fab_hosts is a
+# list of 'host' or a list of 'user@host'. Examples:
 #config.fab_user = 'ccomb'
-config.fab_hosts = ['user@host', ]
+#config.fab_hosts = ['host']
+#config.fab_hosts = ['user@host']
+#config.fab_hosts = ['user1@host1', 'user2@host2']
+
 config.wwwdir = '/var/www/site'
 config.wwwuser = 'www-data'
 config.download_url = \
@@ -21,7 +34,7 @@ patches_urls = """
 config.magento_tarball = config.download_url.split('/')[-1]
 
 
-def host(host):
+def set_host(host):
     """Allows to specify a single target host from the command line
     """
     config.fab_hosts = [host,]
@@ -29,6 +42,8 @@ def host(host):
 def check():
     """Checks whether we can deploy
     """
+    require('fab_hosts')
+    require('fab_user')
     local("echo checking needed commands...")
     run('which wget')
     run('which python')
@@ -43,27 +58,45 @@ def check():
 
 
 def prepare_debian():
-    """Prepare a Debian target system for installation
+    """Prepare a Debian/Ubuntu target system for installation
     """
     # check for internet access
     run('ping -c 1 -W 3 peak.telecommunity.com')
-    # install required packages
-    sudo("""\
-    packages="python python-dev wget tar gzip php5 php5-curl"
+
+    # install required debian packages
+    sudo("""
+    packages="python python-dev wget tar gzip php5 php5-curl mysql-server"
     dpkg -l $packages || aptitude install $packages
+    """)
+
+    # install latest Setuptools for Python
+    sudo("""
     which easy_install \
         || (wget http://peak.telecommunity.com/dist/ez_setup.py \
             && python ez_setup.py \
             && rm ez_setup.py)
-    which hg || easy_install mercurial
-    hg help qinit > /dev/null \
-        || echo 'Please enable the MQ extension on the target machine!
-        Just add these two lines in your ~/.hgrc:\n[extensions]\nhgext.mq='
+    """)
+
+    # install latest Mercurial
+    sudo("which hg || easy_install mercurial")
+
+    # enable the MQ Extension
+    sudo("""python -c "
+import ConfigParser
+import os
+c = ConfigParser.ConfigParser()
+hgrc = os.path.join(os.path.expanduser('~'), '.hgrc')
+c.read(hgrc)
+c.has_section('extensions') or c.add_section('extensions')
+c.has_option('extensions', 'hgext.mq') or c.set('extensions', 'hgext.mq', '')
+c.write(open(hgrc, 'w'))
+    "
     """)
 
 
+
 def prepare_redhat():
-    """Prepare a Redhat target system for installation
+    """Prepare a Redhat/Fedora/CentOS target system for installation
     """
     # TODO
 
