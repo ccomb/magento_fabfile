@@ -201,7 +201,7 @@ def deploy(version):
     rm $(magento_tarball)
     chmod -R g+w .
     cd ..
-    echo 'magento/var/cache\nmagento/var/session/' > .hgignore
+    echo 'magento/var/cache\nmagento/var/session/\n.*/cache/.*' > .hgignore
     hg init
     hg add
     hg ci -m 'initial magento remote installation version $(magento_version)'
@@ -211,11 +211,16 @@ def deploy(version):
     sudo('chgrp -R $(wwwuser) $(wwwdir)')
 
 
-
-def customize():
-    """Customize a magento installation by applying mq patches
+def savepoint():
+    """Create a savepoint after any change in the Magento installation.
+    This command creates a new patch with all the uncommited changes and the new
+    files, after installing a Magento extension, or patching Magento itself.
     """
-
+    local("echo checking uncommited changes...")
+    run('cd $(wwwdir) && [ $(hg st | wc -l) -ne 0 ]')
+    run('cd $(wwwdir) && hg qnew -f savepoint-%s' % config.fab_timestamp)
+    run('cd $(wwwdir) && hg addremove')
+    run('cd $(wwwdir) && hg qrefresh')
 
 
 @_hgtransaction
@@ -245,7 +250,7 @@ def upgrade(to_version):
         try:
             run('cd $(wwwdir)/magento && patch -s -p0 < %s' % patch_name, fail='warn')
             # really stop if there are reject files
-            run("find . -name '*.rej' | wc -l")
+            run("cd $(wwwdir) && [ $(find . -name '*.rej' | wc -l) -eq 0 ]")
         finally:
             run('rm $(wwwdir)/magento/%s' % patch_name)
 

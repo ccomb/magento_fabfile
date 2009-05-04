@@ -9,6 +9,12 @@ Professional Magento deployment with Fabric and Mercurial
 
 .. contents::
 
+
+Warning
+=======
+This article and the provided fabfile are just a food for thought and need to be discussed!
+Feedback appreciated.
+
 Quickstart
 ==========
 If you are in a hurry, if you already know Magento, Mercurial, MQ Extension and Fabric and
@@ -100,6 +106,9 @@ If you do professional Magento deployment, you definitely want to:
    if you have a lot of installed extensions.
 
  * Instantly (and remotely) know which version is installed
+
+ * Be able to deploy again a custom Magento installation, with custom skins,
+   custom extensions, custom patches, etc.
 
 
 To be able to achieve all these tasks, we will use three very good tools:
@@ -260,16 +269,51 @@ To retrieve the version number of the deployed Magento instance, run:
 
 Customize Magento
 ~~~~~~~~~~~~~~~~~
+After installing a Magento extension, you can create a savepoint to your
+repository. The savepoint is created as an MQ patch, so it can be unapplied at a
+later time. Unapplying is useful when you want to upgrade Magento with the diff
+files provided by Varien.
 
+To create a savepoint, run:
+
+  $ fab set_host:user@host savepoint
+
+This command will fail is there is no added, removed or modified files in the
+repository.
+
+TODO: this is unclear when we should commit changes as a changeset, or create an
+MQ patch. MQ Patches are probably useful 
 
 Upgrade Magento
 ~~~~~~~~~~~~~~~
+When you want to upgrade Magento, just run the following command with the target
+version:
 
+  $ fab set_host:user@host upgrade:1.3.1
+
+It will compare the current installed version, and will successively upgrade to
+the wanted version, using each diff file. The location of the diff files is
+known by the fabfile, so this procedure doesn't require any additional
+information. If you have created savepoints, they will be unapplied so that the
+upgrade of Magento won't fail due to unpatchable modifications.
+
+TODO: the diff files may provide patches to some extensions not installed by
+default (ex: blue or modern skin). In this case, the extension won't be
+patched. This is a problem. The MQ patch should probably be used for alpha or
+beta extensions, not for the stable or official ones?
 
 Retrieve the deployment history
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Run:
 
-  $ fab set_host:user@host glog
+  $ fab set_host:user@host get_glog
+
+This is the same as running ``hg glog`` on the server.
+
+
+
+
+
+
 
 
