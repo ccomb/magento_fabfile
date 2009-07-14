@@ -66,7 +66,7 @@ def prepare_debian():
     # install required debian packages
     sudo("""
     packages="python python-dev wget tar gzip php5 php5-curl mysql-server"
-    dpkg -l $packages || aptitude install $packages
+    aptitude -y install $packages
     """)
 
     # Reload Apache (if not enough, you must manually restart)
