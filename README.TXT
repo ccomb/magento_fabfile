@@ -4,8 +4,13 @@ Professional Magento deployment with Fabric and Mercurial
 
 .. highlights::
 
-  | Author : Christophe Combelles <ccomb@gorfou.fr>
-  | for Emencia http://emencia.com
+  | Author : Christophe Combelles for Emencia_
+
+.. image:: /static/logo_emencia.png
+    :align: right
+    :alt: logo Emencia
+    :target: http://emencia.fr
+
 
 .. contents::
 
@@ -13,7 +18,7 @@ Professional Magento deployment with Fabric and Mercurial
 Warning
 =======
 This article and the provided fabfile are just a food for thought and need to be discussed!
-Feedback appreciated.
+It currently does not support database creation. Feedback appreciated. An alternative solution using Buildout_ is provided by Alex Clark `here <http://aclark.net/Members/aclark/blog/a-lamp-buildout-for-wordpress-and-other-php-apps>`_.
 
 Quickstart
 ==========
@@ -42,10 +47,10 @@ Check installed version:
 
   $ fab set_host:user@host get_version
 
-Professional means safe and quick. The core idea is to deploy Magento on the
-server into a *Mercurial* repository, so that everything is versioned, and
-to use *Fabric* to automate the deployment, the upgrade, and the patches
-management.  The main Mercurial history is used for upgrades, and MQ patches are
+Professional means safe and quick. The core idea is to deploy Magento_ on the
+server into a Mercurial_ repository, so that everything is versioned, and
+to use Fabric_ to automate the deployment, the upgrade, and the patches
+management.  The main Mercurial history is used for upgrades, and MQ_ patches are
 used for extensions and customization.  During an upgrade, all patches are
 unapplied, diffs are applied, then patches are reapplied. Mercurial is used to
 simulate a transactional system, so if an upgrade fails, everything is safely
@@ -99,7 +104,7 @@ If you do professional Magento deployment, you definitely want to:
  * Immediately put the installation under version control, to keep a full history
    of all the upgrades and customizations
 
- * Be able to remotely upgrade Magento with diff files provided by *Varien* (the company
+ * Be able to remotely upgrade Magento with diff files provided by Varien_ (the company
    that distributes and maintains the Magento source code)
 
  * Be able to apply diffs, **even** if you heavily modified the Magento source code, or
@@ -113,11 +118,11 @@ If you do professional Magento deployment, you definitely want to:
 
 To be able to achieve all these tasks, we will use three very good tools:
 
- * Fabric ( http://www.nongnu.org/fab/ )
+ * Fabric_
 
- * Mercurial ( http://www.selenic.com/mercurial )
+ * Mercurial_
 
- * Mercurial MQ Extension ( http://www.selenic.com/mercurial/wiki/index.cgi/MqExtension )
+ * Mercurial `MQ Extension`_
 
 
 Fabric
@@ -159,7 +164,7 @@ Documentation
 
 Mercurial
 ~~~~~~~~~
-Mercurial is a very fast, easy-to-use and well-known Distributed Version Control
+Mercurial_ is a very fast, easy-to-use and well-known Distributed Version Control
 System, used by large projects such as Mozilla, OpenJDK, OpenSolaris or Python.
 If you already use Subversion, you will be able to use Mercurial in a matter of
 minutes. The main conceptual difference is that every *checkout* is also a full
@@ -187,7 +192,7 @@ install it with easy_install:
 
 MQ Extension
 ------------
-Now you should enable the MQ Extension. This extension offers patch management,
+Now you should enable the `MQ Extension`_. This extension offers patch management,
 just like *quilt* does, but integrated with Mercurial. It will be used for
 Magento extensions and customizations.
 
@@ -310,10 +315,11 @@ Run:
 
 This is the same as running ``hg glog`` on the server.
 
-
-
-
-
-
-
-
+.. _Magento: http://www.magentocommerce.com
+.. _Emencia: http://emencia.com
+.. _Fabric: http://www.nongnu.org/fab/
+.. _Mercurial: http://mercurial.selenic.com
+.. _MQ Extension: http://mercurial.selenic.com/wiki/MqExtension
+.. _MQ: http://mercurial.selenic.com/wiki/MqExtension
+.. _Buildout: http://www.buildout.org
+.. _Varien: http://www.varien.com

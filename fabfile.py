@@ -18,7 +18,7 @@ config.wwwuser = 'www-data'
 config.download_url = \
   'http://www.magentocommerce.com/downloads/assets/$(magento_version)/magento-$(magento_version).tar.gz'
 
-# please keep it the right order!
+# please keep it in the right order!
 patches_urls = """
 1.1.8   none
 1.2.0.1 http://www.magentocommerce.com/downloads/assets/1.2.0.1/1.1.8-1.2.0.1.diff.tar.gz
