@@ -31,19 +31,19 @@ Install the required tools on your machine::
   $ sudo easy_install fabric==0.1.1
   $ wget https://cody.gorfou.fr/hg/magento_fabfile/raw-file/tip/fabfile.py
 
-Prepare a Debian server for deployment:
+Prepare a Debian server for deployment::
 
   $ fab set_host:user@host prepare_debian
 
-Deploy Magento 1.2.1:
+Deploy Magento 1.2.1::
 
   $ fab set_host:user@host deploy:1.2.1
 
-Upgrade Magento to 1.3.1:
+Upgrade Magento to 1.3.1::
 
   $ fab set_host:user@host upgrade:1.3.1
 
-Check installed version:
+Check installed version::
 
   $ fab set_host:user@host get_version
 
@@ -133,7 +133,7 @@ servers, upload files on these servers, and automate things by creating simple
 commands.
 
 For instance, we will be able to deploy Magento 1.3.0 with a single command line like
-this:
+this::
 
 $ fab deploy:1.3.0
 
@@ -181,12 +181,12 @@ Installation
 Mercurial is needed on the server, not on your machine.
 
 Recent Linux systems already offer a Mercurial package. On Debian or Ubuntu, just
-run the following command as root (or sudo) on your server:
+run the following command as root (or sudo) on your server::
 
   # aptitude install mercurial
 
 If you want a more recent version or if Mercurial is not already packaged,
-install it with easy_install:
+install it with easy_install::
 
   # easy_install mercurial
 
@@ -197,7 +197,7 @@ just like *quilt* does, but integrated with Mercurial. It will be used for
 Magento extensions and customizations.
 
 To enable the MQ Mercurial extension on the server, add the following line in the
-[extensions] section of your .hgrc.:
+[extensions] section of your .hgrc.::
 
   hgext.mq =
 
@@ -231,7 +231,7 @@ and look at the first few variables defined at the top of the file:
 Check the server environment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Make sure your server can be accessed through SSH.
-To check if the server is ready for a Magento deployment, run:
+To check if the server is ready for a Magento deployment, run::
 
   $ fab check
 
@@ -244,7 +244,7 @@ In order to be able to run Magento, your server should offer several required
 tools, such as PHP5 or MySQL, and tools used for deployments and upgrades, such
 as *Mercurial*, *wget* or *patch*.
 
-If you want to prepare a Debian/Ubuntu server for deployment, run:
+If you want to prepare a Debian/Ubuntu server for deployment, run::
 
   $ fab set_host:user@host prepare_debian
 
@@ -253,7 +253,8 @@ fabfile.
 
 Deploy Magento
 ~~~~~~~~~~~~~~
-Now that your server is ready for deployment, you can deploy Magento 1.2.1 with:
+Now that your server is ready for deployment, you can deploy Magento 1.2.1
+with::
 
   $ fab set_host:user@host deploy:1.2.1
 
@@ -267,7 +268,7 @@ timestamp.
 
 Check Magento version
 ~~~~~~~~~~~~~~~~~~~~~
-To retrieve the version number of the deployed Magento instance, run:
+To retrieve the version number of the deployed Magento instance, run::
 
   $ fab set_host:user@host get_version
 
@@ -279,7 +280,7 @@ repository. The savepoint is created as an MQ patch, so it can be unapplied at a
 later time. Unapplying is useful when you want to upgrade Magento with the diff
 files provided by Varien.
 
-To create a savepoint, run:
+To create a savepoint, run::
 
   $ fab set_host:user@host savepoint
 
@@ -292,7 +293,7 @@ MQ patch. MQ Patches are probably useful
 Upgrade Magento
 ~~~~~~~~~~~~~~~
 When you want to upgrade Magento, just run the following command with the target
-version:
+version::
 
   $ fab set_host:user@host upgrade:1.3.1
 
@@ -309,7 +310,7 @@ beta extensions, not for the stable or official ones?
 
 Retrieve the deployment history
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Run:
+Run::
 
   $ fab set_host:user@host get_glog
 
